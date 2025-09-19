@@ -4,3 +4,4 @@
 +import { ServiceRequest } from '../entities/ServiceRequest';
  
  const DEVICE_TYPES = {
+ }
