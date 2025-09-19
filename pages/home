@@ -1,0 +1,527 @@
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Wrench, 
+  Clock, 
+  Shield, 
+  Star, 
+  CheckCircle, 
+  Phone,
+  MessageSquare,
+  MapPin,
+  Award,
+  Users,
+  Zap
+} from 'lucide-react';
+import ChatBot from '../components/ChatBot';
+
+const BACKGROUND_IMAGE_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ccdfe3e2f644ab732abd41/1deb74aaa_Gemini_Generated_Image_qplxthqplxthqplx1.png';
+
+const DEVICE_IMAGES = {
+  washing_machine: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ccdfe3e2f644ab732abd41/92369d1ad_Gemini_Generated_Image_rytj3frytj3frytj.png',
+  dishwasher: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ccdfe3e2f644ab732abd41/e2cd78d16_Gemini_Generated_Image_1m3uxt1m3uxt1m3u.png',
+  fridge: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ccdfe3e2f644ab732abd41/dacaababc_Gemini_Generated_Image_ojeah8ojeah8ojea.png'
+};
+
+export default function Home() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 60,
+      rotateX: -15,
+      scale: 0.9
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      rotateX: 0,
+      scale: 1,
+      transition: { 
+        duration: 0.8, 
+        ease: "easeOut",
+        type: "spring",
+        stiffness: 100
+      } 
+    },
+  };
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      rotateY: -45,
+      rotateX: 20,
+      z: -100,
+      scale: 0.8
+    },
+    visible: { 
+      opacity: 1, 
+      rotateY: 0,
+      rotateX: 0,
+      z: 0,
+      scale: 1,
+      transition: { 
+        duration: 1,
+        ease: "easeOut",
+        type: "spring",
+        stiffness: 80
+      } 
+    },
+  };
+
+  const floatingVariants = {
+    animate: {
+      y: [-10, 10, -10],
+      rotateX: [-2, 2, -2],
+      rotateY: [-1, 1, -1],
+      transition: {
+        duration: 4,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
+  };
+
+  return (
+    <div className="overflow-hidden">
+      <style>{`
+        .perspective-1000 {
+          perspective: 1000px;
+          transform-style: preserve-3d;
+        }
+        
+        .neon-glow-blue {
+          box-shadow: 
+            0 0 10px rgba(0, 191, 255, 0.5),
+            0 0 20px rgba(0, 191, 255, 0.3),
+            0 0 40px rgba(0, 191, 255, 0.2);
+        }
+        
+        .card-3d {
+          transform-style: preserve-3d;
+          perspective: 1200px;
+        }
+        
+        .gradient-blue-bg {
+          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #06b6d4 50%, #0891b2 75%, #1e40af 100%);
+        }
+      `}</style>
+
+      <ChatBot />
+
+      {/* Hero Section with 3D Effects */}
+      <section className="relative min-h-screen flex items-center justify-center text-white perspective-1000">
+        {/* Animated Background */}
+        <motion.div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${BACKGROUND_IMAGE_URL})` }}
+          initial={{ scale: 1.1, rotateZ: 2 }}
+          animate={{ scale: 1, rotateZ: 0 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+        />
+        {/* Dynamic Overlay */}
+        <motion.div 
+          className="absolute inset-0 bg-black/60"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ duration: 1.5 }}
+        />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div 
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, rotateX: 5 }}
+            >
+              <Badge className="mb-6 bg-white/10 text-white backdrop-blur-sm border border-white/20 px-4 py-2 text-sm font-medium neon-glow-blue">
+                İzmir'in #1 Beyaz Eşya Tamiri
+              </Badge>
+            </motion.div>
+            
+            <motion.h1 
+              variants={itemVariants}
+              className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+            >
+              <motion.span 
+                className="block"
+                initial={{ rotateX: -90, opacity: 0 }}
+                animate={{ rotateX: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+              >
+                Profesyonel
+              </motion.span>
+              <motion.span 
+                className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent"
+                initial={{ rotateY: 90, opacity: 0 }}
+                animate={{ rotateY: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.8 }}
+              >
+                Beyaz Eşya Servisi
+              </motion.span>
+            </motion.h1>
+            
+            <motion.p 
+              variants={itemVariants}
+              className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed"
+            >
+              Çamaşır makinesi, bulaşık makinesi ve buzdolabınız için hızlı, güvenilir ve uygun fiyatlı 
+              tamir hizmeti. Buca, Karabağlar ve Konak'ta 7/24 hizmetinizdeyiz.
+            </motion.p>
+
+            <motion.div 
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+            >
+              <motion.div
+                whileHover={{ 
+                  scale: 1.1, 
+                  rotateX: 10,
+                  rotateY: 5,
+                  z: 50
+                }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 text-lg neon-glow-blue"
+                  onClick={() => document.querySelector('[data-chatbot]')?.click()}
+                >
+                  <MessageSquare className="w-5 h-5 mr-2" />
+                  Hızlı Servis Talebi
+                </Button>
+              </motion.div>
+              
+              <a href="https://wa.me/905314918035" target="_blank" rel="noopener noreferrer">
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.1, 
+                    rotateX: -10,
+                    rotateY: -5,
+                    z: 50
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    size="lg"
+                    className="bg-white/10 border-2 border-cyan-400 text-white hover:bg-cyan-400 hover:text-black px-8 py-4 text-lg backdrop-blur-sm neon-glow-blue"
+                  >
+                    <Phone className="w-5 h-5 mr-2" />
+                    Direkt Ara
+                  </Button>
+                </motion.div>
+              </a>
+            </motion.div>
+
+            {/* Trust Indicators with 3D Animation */}
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto"
+            >
+              {[
+                { icon: Clock, text: "24 Saat İçinde Müdahale" },
+                { icon: Shield, text: "1 Yıl Garanti" },
+                { icon: Star, text: "4.9/5 Müşteri Memnuniyeti" }
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  className="flex items-center justify-center space-x-2 text-gray-300"
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotateZ: index % 2 === 0 ? 3 : -3,
+                    y: -10
+                  }}
+                  animate={{
+                    y: [0, -5, 0],
+                    transition: {
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: index * 0.2
+                    }
+                  }}
+                >
+                  <item.icon className="w-5 h-5 text-cyan-400" />
+                  <span className="text-sm font-medium">{item.text}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Services Section with Advanced 3D Cards */}
+      <section className="py-20 bg-white perspective-1000">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Hangi Cihazları Tamir Ediyoruz?
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Tüm büyük markalarda uzman ekibimizle hızlı ve güvenilir çözümler sunuyoruz.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                image: DEVICE_IMAGES.washing_machine,
+                title: 'Çamaşır Makinesi',
+                description: 'Su almama, sıkma sorunu, motor arızası ve tüm tamirler',
+                features: ['Arçelik', 'Bosch', 'LG', 'Samsung', 'Beko']
+              },
+              {
+                image: DEVICE_IMAGES.dishwasher,
+                title: 'Bulaşık Makinesi',
+                description: 'Yıkamama, kurutamama, pompa ve elektronik arızalar',
+                features: ['Siemens', 'Whirlpool', 'Vestel', 'Profilo', 'AEG']
+              },
+              {
+                image: DEVICE_IMAGES.fridge,
+                title: 'Buzdolabı',
+                description: 'Soğutmama, dondurmama, kompresör ve termostat arızaları',
+                features: ['Vestel', 'Arçelik', 'Samsung', 'LG', 'Bosch']
+              }
+            ].map((service, index) => (
+              <motion.div
+                key={index}
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ delay: index * 0.2 }}
+                className="card-3d"
+                whileHover={{ 
+                  rotateY: 8,
+                  rotateX: 5,
+                  scale: 1.05,
+                  z: 100,
+                  transition: { duration: 0.4 }
+                }}
+              >
+                <Card className="h-full transition-all duration-500 transform-gpu gradient-blue-bg text-white neon-glow-blue shadow-2xl">
+                  <CardHeader className="text-center pb-4">
+                    <motion.div 
+                      className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm p-2"
+                      variants={floatingVariants}
+                      animate="animate"
+                    >
+                      <img 
+                        src={service.image} 
+                        alt={service.title}
+                        className="w-full h-full object-contain filter drop-shadow-lg"
+                      />
+                    </motion.div>
+                    <CardTitle className="text-xl font-bold text-white">
+                      {service.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-blue-100 mb-6">{service.description}</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {service.features.map((feature, fIndex) => (
+                        <motion.div
+                          key={fIndex}
+                          whileHover={{ scale: 1.1, rotateZ: 5 }}
+                        >
+                          <Badge 
+                            variant="secondary" 
+                            className="text-xs bg-white/20 text-white border border-cyan-400/30 backdrop-blur-sm"
+                          >
+                            {feature}
+                          </Badge>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section with 3D Icons */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Neden Bizi Tercih Etmelisiniz?
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Yıllardır İzmir'de binlerce mutlu müşteriye hizmet veriyoruz.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            {[
+              {
+                icon: Zap,
+                title: 'Hızlı Müdahale',
+                description: 'Aynı gün servis, 24 saat içinde müdahale garantisi'
+              },
+              {
+                icon: Award,
+                title: 'Uzman Ekip',
+                description: '15+ yıl deneyimli, sertifikalı tekniker kadrosu'
+              },
+              {
+                icon: Users,
+                title: 'Müşteri Odaklı',
+                description: '5000+ mutlu müşteri, %98 memnuniyet oranı'
+              },
+              {
+                icon: MapPin,
+                title: 'Yakın Lokasyon',
+                description: 'Buca, Karabağlar, Konak bölgelerinde hızlı ulaşım'
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="text-center"
+                whileHover={{
+                  y: -20,
+                  rotateY: 10,
+                  rotateX: 5,
+                  scale: 1.1,
+                  transition: { duration: 0.4 }
+                }}
+              >
+                <motion.div 
+                  className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center neon-glow-blue"
+                  whileHover={{ 
+                    rotateY: 360,
+                    scale: 1.2,
+                    transition: { duration: 0.8 }
+                  }}
+                  animate={{
+                    rotateZ: [0, 5, 0, -5, 0],
+                    transition: {
+                      duration: 4,
+                      repeat: Infinity,
+                      delay: index * 0.5
+                    }
+                  }}
+                >
+                  <feature.icon className="w-8 h-8 text-white" />
+                </motion.div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600 text-sm">{feature.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section with 3D Button Effects */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.8 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ rotateX: -45, opacity: 0 }}
+              whileInView={{ rotateX: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Hemen Servis Talebinde Bulunun
+            </motion.h2>
+            <motion.p 
+              className="text-xl text-blue-100 mb-8"
+              initial={{ rotateX: 45, opacity: 0 }}
+              whileInView={{ rotateX: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Profesyonel ekibimiz en kısa sürede sizlere ulaşacak
+            </motion.p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.div
+                whileHover={{ 
+                  scale: 1.1,
+                  rotateX: 15,
+                  rotateY: 5,
+                  z: 50
+                }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Button 
+                  size="lg"
+                  variant="secondary"
+                  className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg neon-glow-blue"
+                  data-chatbot
+                >
+                  <MessageSquare className="w-5 h-5 mr-2" />
+                  Chatbot ile Talep
+                </Button>
+              </motion.div>
+              
+              <a href="https://wa.me/905314918035" target="_blank" rel="noopener noreferrer">
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotateX: -15,
+                    rotateY: -5,
+                    z: 50
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg neon-glow-blue"
+                  >
+                    <Phone className="w-5 h-5 mr-2" />
+                    WhatsApp
+                  </Button>
+                </motion.div>
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </div>
+  );
+}
