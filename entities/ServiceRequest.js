@@ -1,185 +1,419 @@
-import { supabase } from '@/lib/supabase';
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle, X, ChevronRight, CheckCircle, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ServiceRequest } from '@/entities/ServiceRequest';
 
-export class ServiceRequest {
-  constructor(data) {
-    this.id = data?.id;
-    this.device_type = data?.device_type;
-    this.device_type_display = data?.device_type_display;
-    this.brand = data?.brand;
-    this.issue = data?.issue;
-    this.region = data?.region;
-    this.region_display = data?.region_display;
-    this.phone = data?.phone;
-    this.source = data?.source || 'web';
-    this.whatsapp_sent = data?.whatsapp_sent || false;
-    this.status = data?.status || 'new';
-    this.created_at = data?.created_at;
-    this.updated_at = data?.updated_at;
-  }
+const DEVICE_TYPES = {
+  washing_machine: 'Çamaşır Makinesi',
+  dishwasher: 'Bulaşık Makinesi',
+  fridge: 'Buzdolabı'
+};
 
-  static async create(requestData) {
-    try {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .insert([{
-          device_type: requestData.device_type,
-          device_type_display: requestData.device_type_display,
-          brand: requestData.brand,
-          issue: requestData.issue,
-          region: requestData.region,
-          region_display: requestData.region_display,
-          phone: requestData.phone,
-          source: requestData.source || 'web',
-          whatsapp_sent: requestData.whatsapp_sent || false,
-          status: requestData.status || 'new'
-        }])
-        .select()
-        .single();
+const REGIONS = {
+  buca: 'Buca',
+  karabaglar: 'Karabağlar', 
+  konak: 'Konak'
+};
 
-      if (error) {
-        console.error('Error creating service request:', error);
-        throw error;
-      }
+export default function ChatBot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    device_type: '',
+    brand: '',
+    issue: '',
+    region: '',
+    phone: ''
+  });
 
-      return new ServiceRequest(data);
-    } catch (error) {
-      console.error('ServiceRequest.create error:', error);
-      throw error;
-    }
-  }
+  const totalSteps = 6;
 
-  static async findById(id) {
-    try {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Error finding service request:', error);
-        throw error;
-      }
-
-      return data ? new ServiceRequest(data) : null;
-    } catch (error) {
-      console.error('ServiceRequest.findById error:', error);
-      throw error;
-    }
-  }
-
-  static async findAll(filters = {}) {
-    try {
-      let query = supabase.from('service_requests').select('*');
-
-      // Apply filters
-      if (filters.status) {
-        query = query.eq('status', filters.status);
-      }
-      if (filters.region) {
-        query = query.eq('region', filters.region);
-      }
-      if (filters.device_type) {
-        query = query.eq('device_type', filters.device_type);
-      }
-
-      // Order by created_at descending
-      query = query.order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error finding service requests:', error);
-        throw error;
-      }
-
-      return data.map(item => new ServiceRequest(item));
-    } catch (error) {
-      console.error('ServiceRequest.findAll error:', error);
-      throw error;
-    }
-  }
-
-  async update(updateData) {
-    try {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .update({
-          ...updateData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', this.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating service request:', error);
-        throw error;
-      }
-
-      // Update current instance
-      Object.assign(this, data);
-      return this;
-    } catch (error) {
-      console.error('ServiceRequest.update error:', error);
-      throw error;
-    }
-  }
-
-  async delete() {
-    try {
-      const { error } = await supabase
-        .from('service_requests')
-        .delete()
-        .eq('id', this.id);
-
-      if (error) {
-        console.error('Error deleting service request:', error);
-        throw error;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('ServiceRequest.delete error:', error);
-      throw error;
-    }
-  }
-
-  // Helper methods
-  isNew() {
-    return this.status === 'new';
-  }
-
-  isInProgress() {
-    return this.status === 'in_progress';
-  }
-
-  isCompleted() {
-    return this.status === 'completed';
-  }
-
-  isCancelled() {
-    return this.status === 'cancelled';
-  }
-
-  getStatusDisplay() {
-    const statusMap = {
-      'new': 'Yeni Talep',
-      'in_progress': 'İşlemde',
-      'completed': 'Tamamlandı',
-      'cancelled': 'İptal Edildi'
-    };
-    return statusMap[this.status] || this.status;
-  }
-
-  getFormattedCreatedAt() {
-    if (!this.created_at) return '';
-    return new Date(this.created_at).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const resetForm = () => {
+    setCurrentStep(1);
+    setFormData({
+      device_type: '',
+      brand: '',
+      issue: '',
+      region: '',
+      phone: ''
     });
-  }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Create service request
+      const requestData = {
+        device_type: formData.device_type,
+        device_type_display: DEVICE_TYPES[formData.device_type],
+        brand: formData.brand,
+        issue: formData.issue,
+        region: formData.region,
+        region_display: REGIONS[formData.region],
+        phone: formData.phone || null,
+        source: 'chatbot',
+        whatsapp_sent: true,
+        status: 'new'
+      };
+
+      await ServiceRequest.create(requestData);
+
+      // Build WhatsApp message
+      const message = `Merhaba, servis talebi:
+- Cihaz: ${DEVICE_TYPES[formData.device_type]}
+- Marka: ${formData.brand}
+- Şikayet: ${formData.issue}
+- Bölge: ${REGIONS[formData.region]}
+- Telefon: ${formData.phone || 'Belirtilmedi'}`;
+
+      const whatsappUrl = `https://wa.me/905314918035?text=${encodeURIComponent(message)}`;
+      
+      // Open WhatsApp
+      window.open(whatsappUrl, '_blank');
+      
+      // Close chatbot and reset
+      setIsOpen(false);
+      resetForm();
+      
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  return (
+    <>
+      {/* Floating Chat Button */}
+      <motion.div
+        className="fixed bottom-6 right-6 z-50"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
+      >
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl smooth-transition neon-glow"
+          size="icon"
+        >
+          <MessageCircle className="w-6 h-6 text-white" />
+        </Button>
+        
+        {/* Pulse indicator */}
+        <div className="absolute -top-1 -right-1">
+          <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
+        </div>
+      </motion.div>
+
+      {/* Chat Modal */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {setIsOpen(false); resetForm();}}
+                  className="absolute top-4 right-4 text-white hover:bg-white/20"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+                
+                <div className="pr-12">
+                  <h3 className="text-xl font-bold mb-2">Servis Talebi</h3>
+                  <p className="text-green-100 text-sm">Birkaç hızlı soru soracağım</p>
+                </div>
+                
+                {/* Progress bar */}
+                <div className="mt-4 bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-white rounded-full h-2 transition-all duration-300"
+                    style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                  />
+                </div>
+                <div className="text-xs text-green-100 mt-2">
+                  Adım {currentStep} / {totalSteps}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <AnimatePresence mode="wait">
+                  {/* Step 1: Device Type */}
+                  {currentStep === 1 && (
+                    <motion.div
+                      key="step1"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <h4 className="text-lg font-semibold mb-4">Hangi cihazınız arızalı?</h4>
+                      <div className="space-y-3">
+                        {Object.entries(DEVICE_TYPES).map(([key, label]) => (
+                          <Button
+                            key={key}
+                            variant={formData.device_type === key ? "default" : "outline"}
+                            className={`w-full justify-start text-left h-auto p-4 ${
+                              formData.device_type === key 
+                                ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                : 'hover:bg-green-50'
+                            }`}
+                            onClick={() => {
+                              setFormData({...formData, device_type: key});
+                              setTimeout(nextStep, 200);
+                            }}
+                          >
+                            {label}
+                            {formData.device_type === key && <CheckCircle className="w-5 h-5 ml-auto" />}
+                          </Button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 2: Brand */}
+                  {currentStep === 2 && (
+                    <motion.div
+                      key="step2"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <h4 className="text-lg font-semibold mb-4">Marka nedir?</h4>
+                      <Input
+                        placeholder="Örn: Arçelik, Bosch, LG..."
+                        value={formData.brand}
+                        onChange={(e) => setFormData({...formData, brand: e.target.value})}
+                        className="text-lg p-4 border-2 focus:border-green-500"
+                        autoFocus
+                      />
+                      <div className="flex gap-3 mt-6">
+                        <Button variant="outline" onClick={prevStep} className="flex-1">
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Geri
+                        </Button>
+                        <Button 
+                          onClick={nextStep}
+                          disabled={!formData.brand.trim()}
+                          className="flex-1 bg-green-500 hover:bg-green-600"
+                        >
+                          İleri
+                          <ChevronRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 3: Issue */}
+                  {currentStep === 3 && (
+                    <motion.div
+                      key="step3"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <h4 className="text-lg font-semibold mb-4">Arıza nedir?</h4>
+                      <Textarea
+                        placeholder="Örn: Su almıyor, ses çıkarıyor, soğutmuyor..."
+                        value={formData.issue}
+                        onChange={(e) => setFormData({...formData, issue: e.target.value})}
+                        className="text-lg p-4 border-2 focus:border-green-500 min-h-[100px]"
+                        autoFocus
+                      />
+                      <div className="flex gap-3 mt-6">
+                        <Button variant="outline" onClick={prevStep} className="flex-1">
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Geri
+                        </Button>
+                        <Button 
+                          onClick={nextStep}
+                          disabled={!formData.issue.trim()}
+                          className="flex-1 bg-green-500 hover:bg-green-600"
+                        >
+                          İleri
+                          <ChevronRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 4: Region */}
+                  {currentStep === 4 && (
+                    <motion.div
+                      key="step4"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <h4 className="text-lg font-semibold mb-4">Hangi bölgedesiniz?</h4>
+                      <div className="space-y-3">
+                        {Object.entries(REGIONS).map(([key, label]) => (
+                          <Button
+                            key={key}
+                            variant={formData.region === key ? "default" : "outline"}
+                            className={`w-full justify-start text-left h-auto p-4 ${
+                              formData.region === key 
+                                ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                : 'hover:bg-green-50'
+                            }`}
+                            onClick={() => {
+                              setFormData({...formData, region: key});
+                              setTimeout(nextStep, 200);
+                            }}
+                          >
+                            {label}
+                            {formData.region === key && <CheckCircle className="w-5 h-5 ml-auto" />}
+                          </Button>
+                        ))}
+                      </div>
+                      <div className="mt-6">
+                        <Button variant="outline" onClick={prevStep} className="w-full">
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Geri
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 5: Phone */}
+                  {currentStep === 5 && (
+                    <motion.div
+                      key="step5"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <h4 className="text-lg font-semibold mb-2">Telefon numaranız (isteğe bağlı)</h4>
+                      <p className="text-gray-600 text-sm mb-4">Size ulaşabilmemiz için</p>
+                      <Input
+                        placeholder="0531 491 80 35"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        className="text-lg p-4 border-2 focus:border-green-500"
+                        autoFocus
+                      />
+                      <div className="flex gap-3 mt-6">
+                        <Button variant="outline" onClick={prevStep} className="flex-1">
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Geri
+                        </Button>
+                        <Button 
+                          onClick={nextStep}
+                          className="flex-1 bg-green-500 hover:bg-green-600"
+                        >
+                          İleri
+                          <ChevronRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 6: Summary */}
+                  {currentStep === 6 && (
+                    <motion.div
+                      key="step6"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <h4 className="text-lg font-semibold mb-4">Bilgilerinizi kontrol edin</h4>
+                      
+                      <Card className="mb-6">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Cihaz:</span>
+                            <Badge variant="secondary">{DEVICE_TYPES[formData.device_type]}</Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Marka:</span>
+                            <span className="font-medium">{formData.brand}</span>
+                          </div>
+                          <div className="flex justify-between items-start">
+                            <span className="text-gray-600">Arıza:</span>
+                            <span className="font-medium text-right max-w-[200px]">{formData.issue}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Bölge:</span>
+                            <Badge variant="outline">{REGIONS[formData.region]}</Badge>
+                          </div>
+                          {formData.phone && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Telefon:</span>
+                              <span className="font-medium">{formData.phone}</span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      <div className="flex gap-3">
+                        <Button variant="outline" onClick={prevStep} className="flex-1">
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                          Geri
+                        </Button>
+                        <Button 
+                          onClick={handleSubmit}
+                          disabled={isSubmitting}
+                          className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Gönderiliyor...
+                            </>
+                          ) : (
+                            <>
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              WhatsApp'a Gönder
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      
+                      <p className="text-xs text-gray-500 text-center mt-3">
+                        WhatsApp üzerinden mesajınız otomatik olarak iletilecek
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }
